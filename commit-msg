@@ -1,0 +1,30 @@
+#!/bin/bash
+
+filename="$1"
+echo $filename
+lineno=0
+
+error() {
+    echo
+    echo "!!!Commit Failed!!!"
+    echo "$1"
+    echo "!!!Commit Failed!!!"
+    echo
+    exit 1
+}
+
+while read -r line
+do
+    # Ignore comment lines (don't count line number either)
+    [[ "$line" =~ ^#.* ]] && continue
+
+    let lineno+=1
+    length=${#line}
+
+    # Subject line tests
+    if [[ $lineno -eq 1 ]]; then
+        [[ $length -gt 100 ]] && error "* Limit the subject line to 100 characters"
+        [[ ! "$line" =~ ^SDK-[0-9]+:\ .*$ ]] && error "* Commit should match the format SDK-<number>: <commit message>"
+    fi
+done < "$filename"
+exit 0
